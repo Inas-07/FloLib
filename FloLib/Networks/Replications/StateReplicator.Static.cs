@@ -1,4 +1,5 @@
 ﻿using FloLib.Networks.Inject;
+using FloLib.Networks.Inject.FloLib.Networks.Inject;
 using FloLib.Networks.Replications;
 using GTFO.API;
 using SNetwork;
@@ -45,6 +46,8 @@ public sealed partial class StateReplicator<S> where S : struct
         _H_SetStateEvent = StatePayloads.CreateEvent<S>(StateSizeType, HostSetStateEventName, HostSetStateEventCallback);
         _H_SetRecallStateEvent = StatePayloads.CreateEvent<S>(StateSizeType, HostSetRecallStateEventName, HostSetRecallStateEventCallback);
         _Handshake = ReplicatorHandshake.Create($"{Name}-{HashName}");
+
+
         _Handshake.OnClientSyncRequested += ClientSyncRequested;
 
         Inject_SNet_Capture.OnBufferCapture += BufferStored;

@@ -1,8 +1,10 @@
-﻿using GTFO.API;
+﻿using FloLib.Networks.Inject.FloLib.Networks.Inject;
+using GTFO.API;
 using SNetwork;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -29,6 +31,27 @@ public sealed class ReplicatorHandshake
     {
         EventName = eventName;
         NetworkAPI.RegisterEvent<Packet>(eventName, OnSyncAction);
+        Inject_OnRecallDone.OnRecallDone += delegate ()
+        {
+            Logger.Warn("ReplicatorHandshake: client sending sync request");
+            ClientSyncRequest();
+        };
+    }
+
+    private void ClientSyncRequest()
+    {
+        if (SNet.IsMaster)
+        {
+            return;
+        }
+        foreach(uint replicatorID in _Lookup.Keys)
+        {
+            NetworkAPI.InvokeEvent(this.EventName, new ReplicatorHandshake.Packet
+            {
+                replicatorID = replicatorID,
+                action = PacketAction.SyncRequest
+            }, SNet.Master, SNet_ChannelType.GameOrderCritical);
+        }
     }
 
     public void Reset()
