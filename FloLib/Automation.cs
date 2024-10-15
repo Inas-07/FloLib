@@ -2,6 +2,7 @@
 using FloLib.Attributes;
 using FloLib.Events;
 using GTFO.API;
+using HarmonyLib;
 using Il2CppInterop.Runtime.Injection;
 using System;
 using System.Collections.Generic;
@@ -78,7 +79,7 @@ public static class Automation
         var targetAssem = new StackFrame(1).GetMethod()?.GetType()?.Assembly ?? null;
         if (targetAssem == null)
             throw new NullReferenceException("Caller Assembly was null");
-
+        
         RegisterTypes(targetAssem);
     }
 
@@ -112,9 +113,11 @@ public static class Automation
 
     private static void InjectAll(Assembly assem)
     {
-        var types = assem
-            .GetTypes()?
-            .Where(x=>Attribute.IsDefined(x, typeof(AutoInjectAttribute))) ?? Enumerable.Empty<Type>();
+        //var types = assem
+        //    .GetTypes()?
+        //    .Where(x=>Attribute.IsDefined(x, typeof(AutoInjectAttribute))) ?? Enumerable.Empty<Type>();
+        var types = AccessTools.GetTypesFromAssembly(assem)?
+            .Where(x => Attribute.IsDefined(x, typeof(AutoInjectAttribute))) ?? Enumerable.Empty<Type>();
 
         foreach (var type in types)
         {
@@ -136,13 +139,18 @@ public static class Automation
 
     private static void AddAutoInvokes(Assembly assem)
     {
-        var methods = assem
-            .GetTypes()?
+        var methods = AccessTools.GetTypesFromAssembly(assem)?
             .SelectMany(x => x.GetMethods(ALL))?
             .Where(x => x.IsStatic && Attribute.IsDefined(x, typeof(AutoInvokeAttribute))) ?? Enumerable.Empty<MethodInfo>();
 
+        //var methods = assem
+        //    .GetTypes()?
+        //    .SelectMany(x => x.GetMethods(ALL))?
+        //    .Where(x => x.IsStatic && Attribute.IsDefined(x, typeof(AutoInvokeAttribute))) ?? Enumerable.Empty<MethodInfo>();
+
         foreach (var method in methods)
         {
+
             var attribute = (AutoInvokeAttribute)Attribute.GetCustomAttribute(method, typeof(AutoInvokeAttribute));
             var args = attribute.Arguments;
             var when = attribute.When;

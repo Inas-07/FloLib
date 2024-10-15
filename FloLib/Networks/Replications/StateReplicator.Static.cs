@@ -36,7 +36,8 @@ public sealed partial class StateReplicator<S> where S : struct
         StateSize = Marshal.SizeOf(typeof(S));
         StateSizeType = StatePayloads.GetSizeType(StateSize);
 
-        using var md5 = MD5.Create();
+        using var md5 = MD5.Create(); // unused 
+
         HashName = UName.GetHash(typeof(S).FullName);
         ClientRequestEventName = $"SRs{Name}-{HashName}";
         HostSetStateEventName = $"SRr{Name}-{HashName}";
